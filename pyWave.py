@@ -194,7 +194,7 @@ def export_to_csv():
 #################### Main ####################
 def main():
     while True:
-        options = ["Make Transaction?", "View balance", "Lock database?", "Export to CSV?", "Exit?"]
+        options = ["Make Transaction?", "View balance?", "Lock database?", "Export to CSV?", "Exit?"]
         print(f'{banner()}\n\nWhat would you like to do?\n-----------------------------------------------------------\n')
         option = beaupy.select(options, cursor_style="#ffa533")
 
