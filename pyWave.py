@@ -13,8 +13,8 @@ import binascii
 import csv
 import secrets
 import string
-
 from decimal import Decimal
+
 
 
 chacha_header = b"ChaCha real smooth~ dada da dada da"
@@ -98,10 +98,8 @@ def view_balance():
     c.execute("SELECT total FROM transactions")
     transactions = c.fetchall()
     try:
-        #current_total = transactions[-1][0]
         current_total = Decimal(str(transactions[-1][0])).quantize(Decimal('.01'))
     except:
-        #current_total = 0.00
         current_total = Decimal('0.00')
 
     return current_total
