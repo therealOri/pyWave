@@ -34,6 +34,8 @@ When you first run pyWave, You will need to make a "deposit". It needs to know/h
 For example:
 [![asciicast](https://asciinema.org/a/I4NXXg3DcVQjuqS5xtY5TIV4a.svg)](https://asciinema.org/a/I4NXXg3DcVQjuqS5xtY5TIV4a)
 
+> If you have multiple accounts/places you have money, then make a new database and then edit config.json with the new database name and it'll use the new database.
+
 __ __
 
 
