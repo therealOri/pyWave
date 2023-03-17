@@ -44,12 +44,29 @@ def clear():
     os.system("clear||cls")
 
 
+def load_config():
+    with open('config.json') as f:
+        config = json.load(f)
+        database = config.get('database')
+        if not database:
+            clear()
+            input('Invalid config: "database in config.json is empty or missing."\n\nPress "enter" to exit...')
+            exit()
+
+        if os.path.isfile(config["database"]) or os.path.isfile(f'{config["database"]}.locked'):
+            return config
+        else:
+            clear()
+            input('Error loading config file: "Provided database in config.json does not exist."\n\nPress "enter" to exit...')
+            exit()
+
+
 def add_action(price, operation, desc):
     now = datetime.now()
     date = now.strftime("%m/%d/%Y")
     time = now.strftime("%I:%M:%S %p")
 
-    conn = sqlite3.connect("t_actions.db")
+    conn = sqlite3.connect(config["database"])
     c = conn.cursor()
     c.execute("INSERT INTO transactions (price, operation, description, date, time) VALUES (?, ?, ?, ?, ?)", (price, operation.lower(), desc, date, time))
     conn.commit()
@@ -57,7 +74,7 @@ def add_action(price, operation, desc):
 
 
 def update_total():
-    conn = sqlite3.connect("t_actions.db")
+    conn = sqlite3.connect(config["database"])
     c = conn.cursor()
     c.execute("SELECT price FROM transactions ORDER BY id DESC LIMIT 1")
     last_price = c.fetchone()[0]
@@ -92,7 +109,7 @@ def update_total():
 
 
 def view_balance():
-    conn = sqlite3.connect("t_actions.db")
+    conn = sqlite3.connect(config["database"])
     c = conn.cursor()
 
     c.execute("SELECT total FROM transactions")
@@ -153,14 +170,14 @@ def hex_to_base64(hex_string):
     return base64_string.decode()
 
 
-def generate_filename():
+def generate_filename(length, ext):
     alphabet = string.ascii_letters + string.digits
-    filename = ''.join(secrets.choice(alphabet) for i in range(12)) + ".csv"
+    filename = ''.join(secrets.choice(alphabet) for i in range(length)) + ext
     return filename
 
 
 def export_to_csv():
-    conn = sqlite3.connect('t_actions.db')
+    conn = sqlite3.connect(config["database"])
     c = conn.cursor()
     c.execute("SELECT * FROM transactions")
     data = c.fetchall()
@@ -168,7 +185,7 @@ def export_to_csv():
     c.execute(f"PRAGMA table_info(transactions)")
     column_names = [column[1] for column in c.fetchall()]
 
-    csv_file_name = generate_filename()
+    csv_file_name = generate_filename(12, '.csv')
     with open(csv_file_name, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(column_names)
@@ -176,6 +193,24 @@ def export_to_csv():
 
     conn.close()
     return csv_file_name
+
+
+
+
+def create_db(new_db_name):
+    conn = sqlite3.connect(f"{new_db_name}.db")
+    c = conn.cursor()
+    c.execute("""CREATE TABLE IF NOT EXISTS transactions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    price REAL,
+                    operation TEXT,
+                    description TEXT,
+                    date TEXT,
+                    time TEXT,
+                    total REAL DEFAULT 0
+                )""")
+    conn.commit()
+    conn.close()
 #################### Functions ####################
 
 
@@ -192,7 +227,7 @@ def export_to_csv():
 #################### Main ####################
 def main():
     while True:
-        options = ["Make Transaction?", "View balance?", "Lock database?", "Export to CSV?", "Exit?"]
+        options = ["Make Transaction?", "View balance?", "Lock database?", "Export to CSV?", "Make new database?", "Exit?"]
         print(f'{banner()}\n\nWhat would you like to do?\n-----------------------------------------------------------\n')
         option = beaupy.select(options, cursor_style="#ffa533")
 
@@ -201,7 +236,7 @@ def main():
             exit("Keyboard Interuption Detected!\nGoodbye <3")
 
         if options[0] in option:
-            if os.path.isfile('t_actions.db.locked'):
+            if os.path.isfile(f'{config["database"]}.locked'):
                 clear()
                 print("Database file does not exist or is encrypted...")
                 input('\n\nPress "enter" to continue...')
@@ -248,7 +283,7 @@ def main():
 
 
         if options[1] in option:
-            if os.path.isfile('t_actions.db.locked'):
+            if os.path.isfile(f'{config["database"]}.locked'):
                 clear()
                 print("Database file does not exist or is encrypted...")
                 input('\n\nPress "enter" to continue...')
@@ -262,7 +297,7 @@ def main():
 
 
         if options[2] in option:
-            if os.path.isfile('t_actions.db.locked'):
+            if os.path.isfile(f'{config["database"]}.locked'):
                 clear()
                 print("Database file is already encrypted...")
                 input('\n\nPress "enter" to continue...')
@@ -270,7 +305,7 @@ def main():
                 continue
             else:
                 clear()
-                file_name = 't_actions.db'
+                file_name = config["database"]
                 key_data = beaupy.prompt("Data for key gen - (100+ characters)").encode()
 
                 clear()
@@ -300,7 +335,7 @@ def main():
 
 
         if options[3] in option:
-            if os.path.isfile('t_actions.db.locked'):
+            if os.path.isfile(f'{config["database"]}.locked'):
                 clear()
                 print("Database file does not exist or is encrypted...")
                 input('\n\nPress "enter" to continue...')
@@ -313,7 +348,20 @@ def main():
                 continue
 
 
+
         if options[4] in option:
+            clear()
+            db_name = beaupy.prompt('New name for the database. - "new_db_name"')
+            create_db(db_name)
+            clear()
+            input(f'New databse has been made called "{db_name}.db". You can use it by updating the config.json file.\n\nPress "enter" to exit...')
+            clear()
+            exit()
+
+
+
+
+        if options[5] in option:
             clear()
             exit("Goodbye! <3")
 
@@ -328,7 +376,8 @@ def main():
 
 
 if __name__ == '__main__':
-    enc_file_name = "t_actions.db.locked"
+    config = load_config()
+    enc_file_name = f'{config["database"]}.locked'
     if os.path.isfile(enc_file_name):
         clear()
         while True:
