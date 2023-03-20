@@ -16,10 +16,14 @@ __ __
 Commands:
 * `git clone https://github.com/therealOri/pyWave.git`
 * `cd pyWave`
+* `virtualenv pywENV`
+* `source pywENV/bin/activate`
 * `pip install -r requirements.txt`
 * `python pyWave.py`
 
-> Context for the currency used is USD.
+> Context for the currency used is USD. And if you don't have `virtualenv`, you can install it via `pip`.
+
+`pip install virtualenv`
 __ __
 
 
