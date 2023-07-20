@@ -10,7 +10,7 @@ GCMlib==1.0.3
 grapheme==0.6.0
 pycparser==2.21
 pycryptodome==3.17
-Pygments==2.14.0
+Pygments==2.15.0
 pystyle==2.9
 python-yakh==0.3.1
 rich==12.6.0
